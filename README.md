@@ -1,36 +1,29 @@
 # Winlator Pulse Turnip Driver Builder
 
-Turnip 驱动自动编译仓库。从 Mesa 上游源码编译，打包成 Winlator 可用的 .tzst 格式。
+自动从 Mesa 上游编译 Turnip 驱动，打包成 Winlator tzst 格式。
 
-## 编译输出
+## 输出格式
 
-- `turnip-<version>-git<hash>.tzst`
-- 格式：tar.zst 压缩，包含 usr/lib/ 和 usr/share/vulkan/icd.d/
-- 直接放到 Winlator 的 graphics_driver 目录即可
+```
+turnip-<version>-<variant>-git<hash>.tzst
+```
 
-## 编译参数
+- 标准版（standard）：上游 Mesa 原生，兼容性最好
+- Adreno 8XX 版（a8xx）：支持新 GPU（骁龙 8 Elite 等）
+- 性能版（perf）：强制最高频率，追求性能
 
-基于 whitebelyash/AdrenoToolsDrivers 的 turnip_builder_upstream.sh：
+## 自动同步机制
 
-- Android NDK r29
-- Meson 编译
-- -Dvulkan-drivers=freedreno
-- -Dfreedreno-kmds=kgsl
-- -Dvulkan-beta=true
+- 每小时检查 Mesa main 分支是否有新提交
+- 有变化自动触发编译
+- 版本号按 GitHub run number 自动递增
 
-## 补丁
+## 使用方式
 
-默认加 tu8_kgsl.patch（支持 Adreno 8XX 新 GPU）。
+编译产物自动上传到 [winlator-components](https://github.com/mihsian77/winlator-components) 的 turnip Release。
 
-## 使用
+## 技术栈
 
-1. 手动触发 workflow_dispatch
-2. 输入版本号、Mesa 源码地址、补丁地址
-3. 编译完成后下载 artifact
-4. 上传到 winlator-components 仓库的 turnip Release
-
-## 参考
-
-- [whitebelyash/AdrenoToolsDrivers](https://github.com/whitebelyash/AdrenoToolsDrivers) - 编译脚本参考
-- [lfdevs/mesa-for-android-container](https://github.com/lfdevs/mesa-for-android-container) - Mesa Android 容器编译
-- [whitebelyash/mesa-tu8](https://github.com/whitebelyash/mesa-tu8) - tu8_kgsl.patch 补丁来源
+- NDK r29
+- meson >= 1.4
+- Python 幂等补丁系统

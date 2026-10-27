@@ -1,67 +1,104 @@
-name: Build Turnip Driver
+name: Build Turnip
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
-      build_version:
-        description: 'Build version name'
-        required: true
-        default: 'custom'
-      mesa_src:
-        description: 'Mesa source URL'
-        required: true
-        default: 'https://gitlab.freedesktop.org/mesa/mesa'
-      patch_url:
-        description: 'Patch URL (empty for no patch)'
+      publish:
+        description: "Publish the release"
         required: false
-        default: 'https://github.com/whitebelyash/mesa-tu8/releases/download/patchset-head-v2/tu8_kgsl.patch'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [standard, a8xx, perf]
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          git meson ninja-build patchelf unzip curl \
-          python3-pip flex bison zip zstd \
-          glslang-tools
-        
-        pip install mako
-    
-    - name: Build Turnip driver
-      env:
-        BUILD_VERSION: ${{ github.event.inputs.build_version || 'latest' }}
-        MESASRC: ${{ github.event.inputs.mesa_src || 'https://gitlab.freedesktop.org/mesa/mesa' }}
-        PATCH_URL: ${{ github.event.inputs.patch_url || 'https://github.com/whitebelyash/mesa-tu8/releases/download/patchset-head-v2/tu8_kgsl.patch' }}
-      run: |
-        chmod +x build_turnip.sh
-        ./build_turnip.sh
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: turnip-driver
-        path: /tmp/*.tzst
-    
-    - name: Create Release
-      if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-      uses: softprops/action-gh-release@v1
-      with:
-        name: Turnip ${{ github.event.inputs.build_version }}
-        files: /tmp/*.tzst
-        body: |
-          Auto-built Turnip driver for Winlator Pulse.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build patchelf unzip curl python3-pip flex bison zip \
+            glslang-tools ccache zstd
+          sudo python3 -m pip install --quiet --break-system-packages "meson>=1.4" mako
+
+      - name: Build variant ${{ matrix.variant }}
+        env:
+          VARIANT: ${{ matrix.variant }}
+          BUILD_VERSION: ${{ github.run_number }}
+        run: |
+          chmod +x build_turnip.sh
+          ./build_turnip.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnip-${{ matrix.variant }}
+          path: /tmp/turnip-*.tzst
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.publish == 'true' || github.event_name == 'schedule' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: turnip-*
+          merge-multiple: true
+          path: ./artifacts
+
+      - name: List artifacts
+        run: ls -la ./artifacts/
+
+      - name: Upload to components repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Upload to winlator-components turnip release
+          for f in ./artifacts/*.tzst; do
+            echo "Uploading $f..."
+            gh release upload turnip "$f" \
+              --repo mihsian77/winlator-components \
+              --clobber || echo "Warning: failed to upload $f"
+          done
+
+      - name: Update index.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Clone components repo and update index.txt
+          git clone https://x-access-token:${GH_TOKEN}@github.com/mihsian77/winlator-components.git
+          cd winlator-components
           
-          - Mesa source: ${{ github.event.inputs.mesa_src }}
-          - Patch: ${{ github.event.inputs.patch_url || 'None' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Generate new index.txt
+          echo "# Turnip Drivers" > turnip/index.txt
+          echo "" >> turnip/index.txt
+          echo "Available versions:" >> turnip/index.txt
+          echo "" >> turnip/index.txt
+          
+          # List all turnip tzst files from release
+          gh release view turnip --repo mihsian77/winlator-components --json assets \
+            --jq '.assets[].name' | sort >> turnip/index.txt
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add turnip/index.txt
+          git diff --staged --quiet || git commit -m "chore: update turnip component list"
+          git push

@@ -1,0 +1,67 @@
+name: Build Turnip Driver
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      build_version:
+        description: 'Build version name'
+        required: true
+        default: 'custom'
+      mesa_src:
+        description: 'Mesa source URL'
+        required: true
+        default: 'https://gitlab.freedesktop.org/mesa/mesa'
+      patch_url:
+        description: 'Patch URL (empty for no patch)'
+        required: false
+        default: 'https://github.com/whitebelyash/mesa-tu8/releases/download/patchset-head-v2/tu8_kgsl.patch'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git meson ninja-build patchelf unzip curl \
+          python3-pip flex bison zip zstd \
+          glslang-tools
+        
+        pip install mako
+    
+    - name: Build Turnip driver
+      env:
+        BUILD_VERSION: ${{ github.event.inputs.build_version || 'latest' }}
+        MESASRC: ${{ github.event.inputs.mesa_src || 'https://gitlab.freedesktop.org/mesa/mesa' }}
+        PATCH_URL: ${{ github.event.inputs.patch_url || 'https://github.com/whitebelyash/mesa-tu8/releases/download/patchset-head-v2/tu8_kgsl.patch' }}
+      run: |
+        chmod +x build_turnip.sh
+        ./build_turnip.sh
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: turnip-driver
+        path: /tmp/*.tzst
+    
+    - name: Create Release
+      if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Turnip ${{ github.event.inputs.build_version }}
+        files: /tmp/*.tzst
+        body: |
+          Auto-built Turnip driver for Winlator Pulse.
+          
+          - Mesa source: ${{ github.event.inputs.mesa_src }}
+          - Patch: ${{ github.event.inputs.patch_url || 'None' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

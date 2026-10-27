@@ -20,8 +20,8 @@ echo ""
 
 check_deps() {
     echo "Checking dependencies..."
-    apt-get update -qq
-    apt-get install -y --no-install-recommends \
+    sudo apt-get update -qq
+    sudo apt-get install -y --no-install-recommends \
         git ccache ninja-build python3-pip pkg-config \
         libdrm-dev libxcb1-dev libxcb-dri3-dev libxcb-present-dev \
         libxcb-randr-dev libxcb-shm0-dev libx11-xcb-dev \

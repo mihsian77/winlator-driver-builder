@@ -24,7 +24,7 @@ check_deps() {
     sudo apt-get install -y --no-install-recommends \
         git ccache ninja-build python3-pip pkg-config \
         libdrm-dev libxcb1-dev libxcb-dri3-dev libxcb-present-dev \
-        libxcb-randr-dev libxcb-shm0-dev libx11-xcb-dev \
+        libxcb-randr0-dev libxcb-shm0-dev libx11-xcb-dev \
         flex bison glslang-tools zstd tar
     pip3 install --break-system-packages "meson>=1.4" mako
     echo -e "$green Dependencies installed $nocolor"

@@ -14,8 +14,8 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -24,14 +24,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            ninja-build patchelf unzip curl python3-pip flex bison zip \
-            glslang-tools ccache zstd
-          sudo python3 -m pip install --quiet --break-system-packages "meson>=1.4" mako
 
       - name: Build variant ${{ matrix.variant }}
         env:
@@ -71,7 +63,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Upload to winlator-components turnip release
           for f in ./artifacts/*.tzst; do
             echo "Uploading $f..."
             gh release upload turnip "$f" \
@@ -83,17 +74,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Clone components repo and update index.txt
           git clone https://x-access-token:${GH_TOKEN}@github.com/mihsian77/winlator-components.git
           cd winlator-components
           
-          # Generate new index.txt
           echo "# Turnip Drivers" > turnip/index.txt
           echo "" >> turnip/index.txt
           echo "Available versions:" >> turnip/index.txt
           echo "" >> turnip/index.txt
           
-          # List all turnip tzst files from release
           gh release view turnip --repo mihsian77/winlator-components --json assets \
             --jq '.assets[].name' | sort >> turnip/index.txt
           

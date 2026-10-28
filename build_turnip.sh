@@ -20,14 +20,21 @@ echo ""
 
 check_deps() {
     echo "Checking dependencies..."
-    apt-get update -qq
-    apt-get install -y --no-install-recommends \
-        git ccache ninja-build python3-pip pkg-config \
-        libdrm-dev libxcb1-dev libxcb-dri3-dev libxcb-present-dev \
-        libxcb-randr0-dev libxcb-shm0-dev libx11-xcb-dev \
-        flex bison glslang-tools zstd tar
-    pip3 install --break-system-packages "meson>=1.4" mako
-    echo -e "$green Dependencies installed $nocolor"
+    deps_missing=0
+    for dep in git ninja meson python3 zstd tar pkg-config; do
+        if command -v "$dep" >/dev/null 2>&1; then
+            echo -e "$green - $dep found $nocolor"
+        else
+            echo -e "$red - $dep not found $nocolor"
+            deps_missing=1
+        fi
+    done
+    
+    if [ "$deps_missing" == "1" ]; then
+        echo "Please install missing dependencies"
+        exit 1
+    fi
+    echo -e "$green Dependencies OK $nocolor"
 }
 
 prepare_workdir() {

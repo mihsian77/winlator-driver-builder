@@ -150,7 +150,13 @@ pack_tzst() {
 }
 EOF
     
-    OUTPUT_NAME="turnip-${MESA_VERSION}-devel-git${GITHASH}-${VARIANT}.tzst"
+    # Simplified naming: standard has no suffix, others have -variant suffix
+    if [ "$VARIANT" == "standard" ]; then
+        VARIANT_SUFFIX=""
+    else
+        VARIANT_SUFFIX="-${VARIANT}"
+    fi
+    OUTPUT_NAME="turnip-${MESA_VERSION}${VARIANT_SUFFIX}.tzst"
     cd "$PACKDIR"
     tar --zstd -cf "/tmp/$OUTPUT_NAME" usr/
     

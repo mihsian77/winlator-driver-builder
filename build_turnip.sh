@@ -62,7 +62,7 @@ build_turnip() {
     echo ""
     echo "Building Turnip driver (Glibc native)..."
     
-    export CCACHE_DIR="/root/.ccache"
+    export CCACHE_DIR="$HOME/.ccache"
     ccache --max-size=2G
     ccache --zero-stats
     

@@ -133,7 +133,7 @@ pack_tzst() {
     DESTDIR=/tmp/mesa-install meson install -C build/
     
     # Copy the driver
-    cp /tmp/mesa-install/usr/lib/libvulkan_freedreno.so "$PACKDIR/usr/lib/"
+    cp /tmp/mesa-install/usr/lib/aarch64-linux-gnu/libvulkan_freedreno.so "$PACKDIR/usr/lib/"
     
     # Create ICD json
     cat <<EOF >"$PACKDIR/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json"

@@ -124,6 +124,9 @@ pack_tzst() {
     echo ""
     echo "Packing as .tzst for Winlator..."
     
+    # Read Mesa version from source
+    MESA_VERSION=$(cat VERSION | sed 's/-devel.*//' | tr -d '[:space:]' || echo "unknown")
+    
     PACKDIR="/tmp/turnip-tzst"
     rm -rf "$PACKDIR"
     mkdir -p "$PACKDIR/usr/lib"
@@ -147,14 +150,16 @@ pack_tzst() {
 }
 EOF
     
-    OUTPUT_NAME="turnip-$BUILD_VERSION-$VARIANT-git$GITHASH.tzst"
+    OUTPUT_NAME="turnip-${MESA_VERSION}-devel-git${GITHASH}-${VARIANT}.tzst"
     cd "$PACKDIR"
     tar --zstd -cf "/tmp/$OUTPUT_NAME" usr/
     
     echo -e "$green Packed: /tmp/$OUTPUT_NAME $nocolor"
     echo "  Size: $(du -h /tmp/$OUTPUT_NAME | cut -f1)"
+    echo "  Mesa version: $MESA_VERSION"
     
     echo "$GITHASH" > /tmp/mesa_hash.txt
+    echo "$MESA_VERSION" > /tmp/mesa_version.txt
 }
 
 # Run

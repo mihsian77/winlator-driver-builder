@@ -20,8 +20,8 @@ echo ""
 
 check_deps() {
     echo "Checking dependencies..."
-    sudo apt-get update -qq
-    sudo apt-get install -y --no-install-recommends \
+    apt-get update -qq
+    apt-get install -y --no-install-recommends \
         git ccache ninja-build python3-pip pkg-config \
         libdrm-dev libxcb1-dev libxcb-dri3-dev libxcb-present-dev \
         libxcb-randr0-dev libxcb-shm0-dev libx11-xcb-dev \
@@ -71,7 +71,7 @@ build_turnip() {
     echo "Configuring meson..."
     meson setup build/ \
         --prefix=/usr \
-        -Dplatforms=x11,wayland \
+        -Dplatforms=x11 \
         -Dgallium-drivers= \
         -Dgallium-va=disabled \
         -Dgallium-mediafoundation=disabled \

@@ -90,7 +90,7 @@ build_turnip() {
         -Dgbm=disabled \
         -Dglx=disabled \
         -Dxlib-lease=disabled \
-        -Dfreedreno-kmds=kgsl \
+        -Dfreedreno-kgsl=true \
         -Degl=disabled \
         -Dglvnd=disabled \
         -Dintel-rt=disabled \

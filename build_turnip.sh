@@ -44,7 +44,7 @@ prepare_workdir() {
     mkdir -p "$workdir" && cd "$workdir"
     
     echo "Downloading Mesa source..."
-    git clone --depth=1 -b main "$MESASRC" mesa
+    git clone --depth=1 -b 26.2 "$MESASRC" mesa
     cd mesa
     
     echo "Mesa version: $(cat VERSION)"

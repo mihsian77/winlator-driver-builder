@@ -72,7 +72,7 @@ jobs:
 
       - name: Upload to components repo
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.COMPONENTS_PAT }}
         run: |
           for f in ./artifacts/*.tzst; do
             echo "Uploading $f..."
@@ -83,7 +83,7 @@ jobs:
 
       - name: Update index.txt
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.COMPONENTS_PAT }}
         run: |
           git clone https://x-access-token:${GH_TOKEN}@github.com/mihsian77/winlator-components.git
           cd winlator-components

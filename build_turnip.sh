@@ -9,7 +9,7 @@ red='\033[0;31m'
 nocolor='\033[0m'
 
 BUILD_VERSION=${BUILD_VERSION:-"latest"}
-MESASRC=${MESASRC:-"https://gitlab.freedesktop.org/mesa/mesa"}
+MESASRC=${MESASRC:-"https://github.com/lfdevs/mesa-for-android-container"}
 VARIANT=${VARIANT:-"standard"}  # standard / a8xx / perf
 
 echo "====== Winlator Pulse Turnip Builder (Glibc) ======"
@@ -44,7 +44,7 @@ prepare_workdir() {
     mkdir -p "$workdir" && cd "$workdir"
     
     echo "Downloading Mesa source..."
-    git clone --depth=1 -b 26.2 "$MESASRC" mesa
+    git clone --depth=1 -b main "$MESASRC" mesa
     cd mesa
     
     echo "Mesa version: $(cat VERSION)"

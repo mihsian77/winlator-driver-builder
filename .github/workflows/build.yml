@@ -28,6 +28,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qq
+          # Enable deb-src sources for apt build-dep
+          sudo sed -i 's/^#\s*deb-src/deb-src/g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+          sudo sed -i 's/^#\s*deb-src/deb-src/g' /etc/apt/sources.list 2>/dev/null || true
+          sudo apt-get update -qq
           sudo apt build-dep -y mesa
           sudo apt-get install -y --no-install-recommends \
             git ccache ninja-build python3-pip pkg-config \

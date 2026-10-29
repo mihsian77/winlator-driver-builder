@@ -1,0 +1,72 @@
+name: Build Box64
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish the release"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            git cmake build-essential zstd tar
+
+      - name: Build Box64
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+        run: |
+          chmod +x build_box64.sh
+          ./build_box64.sh
+
+      - name: Upload to components repo
+        if: ${{ inputs.publish }}
+        env:
+          COMPONENTS_PAT: ${{ secrets.COMPONENTS_PAT }}
+        run: |
+          # 获取编译出的文件名
+          PACKAGE_NAME=$(ls /tmp/box64-*.tzst | head -1)
+          echo "Uploading: $PACKAGE_NAME"
+          
+          # 获取 release ID
+          RELEASE_ID=$(curl -s -H "Authorization: token $COMPONENTS_PAT" \
+            "https://api.github.com/repos/mihsian77/winlator-components/releases/tags/box64" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+          
+          # 上传文件
+          curl -s -X POST \
+            -H "Authorization: token $COMPONENTS_PAT" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@$PACKAGE_NAME" \
+            "https://uploads.github.com/repos/mihsian77/winlator-components/releases/$RELEASE_ID/assets?name=$(basename $PACKAGE_NAME)"
+          
+          # 更新 index.txt
+          cd $GITHUB_WORKSPACE
+          git clone https://mihsian77:$COMPONENTS_PAT@github.com/mihsian77/winlator-components.git /tmp/components
+          cd /tmp/components
+          
+          # 添加新文件到 index.txt
+          echo "$(basename $PACKAGE_NAME)" >> box64/index.txt
+          sort -u box64/index.txt -o box64/index.txt
+          
+          # 提交并推送
+          git config user.name "mihsian77"
+          git config user.email "moon279@users.noreply.github.com"
+          git add box64/index.txt
+          git diff --staged --quiet || git commit -m "chore: sync Box64 nightly $(basename $PACKAGE_NAME)"
+          git push

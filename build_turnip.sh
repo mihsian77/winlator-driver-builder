@@ -78,7 +78,7 @@ build_turnip() {
     echo "Configuring meson..."
     meson setup build/ \
         --prefix=/usr \
-        -Dplatforms=x11 \
+        -Dplatforms= \
         -Dgallium-drivers= \
         -Dgallium-va=disabled \
         -Dgallium-mediafoundation=disabled \
@@ -145,7 +145,7 @@ pack_tzst() {
     "ICD": {
         "api_version": "1.4.354",
         "library_arch": "64",
-        "library_path": "/data/data/com.winlator/files/rootfs/lib/libvulkan_freedreno.so"
+        "library_path": "/data/data/com.winlator/files/rootfs/usr/lib/libvulkan_freedreno.so"
     },
     "file_format_version": "1.0.1"
 }

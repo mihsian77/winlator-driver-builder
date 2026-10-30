@@ -9,7 +9,8 @@ red='\033[0;31m'
 nocolor='\033[0m'
 
 BUILD_VERSION=${BUILD_VERSION:-"latest"}
-MESASRC=${MESASRC:-"https://github.com/lfdevs/mesa-for-android-container"}
+MESASRC=${MESASRC:-"https://github.com/brunodev85/mesa3d-custom"}
+MESADIR=${MESADIR:-"turnip-26.0.3"}  # 编译哪个版本的 Mesa
 VARIANT=${VARIANT:-"standard"}  # standard / a8xx / perf
 
 echo "====== Winlator Pulse Turnip Builder (Glibc) ======"
@@ -44,8 +45,8 @@ prepare_workdir() {
     mkdir -p "$workdir" && cd "$workdir"
     
     echo "Downloading Mesa source..."
-    git clone --depth=1 -b adreno-ubuntu-noble-updates "$MESASRC" mesa
-    cd mesa
+    git clone --depth=1 "$MESASRC" mesa
+    cd mesa/"$MESADIR"
     
     echo "Mesa version: $(cat VERSION)"
 }
@@ -78,7 +79,7 @@ build_turnip() {
     echo "Configuring meson..."
     meson setup build/ \
         --prefix=/usr \
-        -Dplatforms= \
+        -Dplatforms=x11 \
         -Dgallium-drivers= \
         -Dgallium-va=disabled \
         -Dvulkan-drivers=freedreno \

@@ -44,7 +44,7 @@ prepare_workdir() {
     mkdir -p "$workdir" && cd "$workdir"
     
     echo "Downloading Mesa source..."
-    git clone --depth=1 -b adreno-main "$MESASRC" mesa
+    git clone --depth=1 -b adreno-ubuntu-noble-updates "$MESASRC" mesa
     cd mesa
     
     echo "Mesa version: $(cat VERSION)"

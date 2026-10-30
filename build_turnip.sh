@@ -81,7 +81,6 @@ build_turnip() {
         -Dplatforms= \
         -Dgallium-drivers= \
         -Dgallium-va=disabled \
-        -Dgallium-mediafoundation=disabled \
         -Dvulkan-drivers=freedreno \
         -Dvulkan-layers= \
         -Dgles1=disabled \
@@ -91,7 +90,6 @@ build_turnip() {
         -Dglx=disabled \
         -Dxlib-lease=disabled \
         -Dfreedreno-kmds=kgsl \
-        -Dallow-fallback-for=libdrm \
         -Degl=disabled \
         -Dglvnd=disabled \
         -Dintel-rt=disabled \

@@ -9,8 +9,7 @@ red='\033[0;31m'
 nocolor='\033[0m'
 
 BUILD_VERSION=${BUILD_VERSION:-"latest"}
-MESASRC=${MESASRC:-"https://github.com/brunodev85/mesa3d-custom"}
-MESADIR=${MESADIR:-"turnip-26.0.3"}  # 编译哪个版本的 Mesa
+MESASRC=${MESASRC:-"https://github.com/alexvorxx/mesa-freedreno-xlib"}
 VARIANT=${VARIANT:-"standard"}  # standard / a8xx / perf
 
 echo "====== Winlator Pulse Turnip Builder (Glibc) ======"
@@ -46,7 +45,7 @@ prepare_workdir() {
     
     echo "Downloading Mesa source..."
     git clone --depth=1 "$MESASRC" mesa
-    cd mesa/"$MESADIR"
+    cd mesa
     
     echo "Mesa version: $(cat VERSION)"
 }
@@ -88,12 +87,11 @@ build_turnip() {
         -Dgles2=disabled \
         -Dopengl=false \
         -Dgbm=disabled \
-        -Dglx=disabled \
+        -Dglx=xlib \
         -Dxlib-lease=disabled \
-        -Dfreedreno-kmds=msm,kgsl \
+        -Dfreedreno-kmds=kgsl \
         -Degl=disabled \
         -Dglvnd=disabled \
-        -Ddri3=enabled \
         -Dintel-rt=disabled \
         -Dmicrosoft-clc=disabled \
         -Dllvm=disabled \

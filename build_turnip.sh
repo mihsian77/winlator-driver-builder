@@ -90,9 +90,10 @@ build_turnip() {
         -Dgbm=disabled \
         -Dglx=disabled \
         -Dxlib-lease=disabled \
-        -Dfreedreno-kmds=kgsl \
+        -Dfreedreno-kmds=msm,kgsl \
         -Degl=disabled \
         -Dglvnd=disabled \
+        -Ddri3=enabled \
         -Dintel-rt=disabled \
         -Dmicrosoft-clc=disabled \
         -Dllvm=disabled \

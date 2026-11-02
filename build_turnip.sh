@@ -9,7 +9,7 @@ red='\033[0;31m'
 nocolor='\033[0m'
 
 BUILD_VERSION=${BUILD_VERSION:-"latest"}
-MESASRC=${MESASRC:-"https://github.com/alexvorxx/mesa-freedreno-xlib"}
+MESASRC=${MESASRC:-"https://github.com/brunodev85/mesa3d-custom"}
 VARIANT=${VARIANT:-"standard"}  # standard / a8xx / perf
 
 echo "====== Winlator Pulse Turnip Builder (Glibc) ======"
@@ -47,6 +47,12 @@ prepare_workdir() {
     git clone --depth=1 "$MESASRC" mesa
     cd mesa
     
+    # brunodev85/mesa3d-custom stores each driver version in a subdirectory
+    if [ -d "turnip-26.1.0-devel" ]; then
+        echo "Using official Winlator turnip-26.1.0-devel source"
+        cd turnip-26.1.0-devel
+    fi
+    
     echo "Mesa version: $(cat VERSION)"
 }
 
@@ -78,6 +84,8 @@ build_turnip() {
     echo "Configuring meson..."
     meson setup build/ \
         --prefix=/usr \
+        -Dstrip=true \
+        -Dcpp_rtti=false \
         -Dplatforms=x11 \
         -Dgallium-drivers= \
         -Dgallium-va=disabled \
@@ -89,12 +97,14 @@ build_turnip() {
         -Dgbm=disabled \
         -Dglx=disabled \
         -Dxlib-lease=disabled \
-        -Dfreedreno-kmds=msm,kgsl \
+        -Dfreedreno-kmds=kgsl,msm \
+        -Dxmlconfig=disabled \
         -Degl=disabled \
         -Dglvnd=disabled \
         -Dintel-rt=disabled \
         -Dmicrosoft-clc=disabled \
         -Dllvm=disabled \
+        -Dshared-llvm=disabled \
         -Dvalgrind=disabled \
         -Dbuild-tests=false \
         -Dlibunwind=disabled \

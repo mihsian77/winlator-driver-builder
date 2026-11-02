@@ -85,9 +85,9 @@ build_turnip() {
         -Dvulkan-layers= \
         -Dgles1=disabled \
         -Dgles2=disabled \
-        -Dopengl=true \
+        -Dopengl=false \
         -Dgbm=disabled \
-        -Dglx=xlib \
+        -Dglx=disabled \
         -Dxlib-lease=disabled \
         -Dfreedreno-kmds=msm,kgsl \
         -Degl=disabled \

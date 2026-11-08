@@ -47,10 +47,13 @@ prepare_workdir() {
     git clone --depth=1 "$MESASRC" mesa
     cd mesa
     
-    # brunodev85/mesa3d-custom stores each driver version in a subdirectory
-    if [ -d "turnip-26.1.0-devel" ]; then
-        echo "Using official Winlator turnip-26.1.0-devel source"
-        cd turnip-26.1.0-devel
+    # brunodev85/mesa3d-custom stores each driver version in a subdirectory.
+    # Pick the newest turnip-* directory so the build follows the official source;
+    # when upstream adds turnip-26.2.x-devel this keeps working without code changes.
+    turnip_dir=$(ls -d turnip-*/ 2>/dev/null | sort -V | tail -1)
+    if [ -n "$turnip_dir" ]; then
+        echo "Using official Winlator source: $turnip_dir"
+        cd "$turnip_dir"
     fi
     
     echo "Mesa version: $(cat VERSION)"

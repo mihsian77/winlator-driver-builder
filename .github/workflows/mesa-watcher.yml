@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check Mesa main for new commits
+      - name: Check official Winlator mesa source for new commits
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +24,9 @@ jobs:
           HASH_FILE="mesa_hash.txt"
           touch "$HASH_FILE"
 
-          MESA_HASH=$(git ls-remote https://gitlab.freedesktop.org/mesa/mesa HEAD | awk '{print $1}')
+          # We build from brunodev85/mesa3d-custom (the official Winlator driver
+          # source), not from mesa/mesa upstream, so follow that repo only.
+          MESA_HASH=$(git ls-remote https://github.com/brunodev85/mesa3d-custom HEAD | awk '{print $1}')
           OLD_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "")
 
           echo "Current:  ${MESA_HASH:0:7}"

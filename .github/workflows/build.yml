@@ -78,12 +78,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.COMPONENTS_PAT }}
         run: |
+          FAILED=0
           for f in ./artifacts/*.tzst; do
             echo "Uploading $f..."
             gh release upload turnip "$f" \
               --repo mihsian77/winlator-components \
-              --clobber || echo "Warning: failed to upload $f"
+              --clobber || { echo "::error::upload failed: $f"; FAILED=$((FAILED+1)); }
           done
+          # 以前这里把失败吞成 warning，导致 job 显示成功但组件仓库里根本没有新文件
+          [ "$FAILED" -eq 0 ]
 
       - name: Update index.txt
         env:

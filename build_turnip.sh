@@ -162,13 +162,14 @@ pack_tzst() {
 }
 EOF
     
-    # Simplified naming: standard has no suffix, others have -variant suffix
+    # 自编译产物统一带 -dev 标记，和官方版本区分开：
+    # 公开的组件列表（index.txt）只列官方包，自编译的只留在 release 里供手动下载测试
     if [ "$VARIANT" == "standard" ]; then
         VARIANT_SUFFIX=""
     else
         VARIANT_SUFFIX="-${VARIANT}"
     fi
-    OUTPUT_NAME="turnip-${MESA_VERSION}${VARIANT_SUFFIX}.tzst"
+    OUTPUT_NAME="turnip-${MESA_VERSION}-dev${VARIANT_SUFFIX}.tzst"
     cd "$PACKDIR"
     tar --zstd -cf "/tmp/$OUTPUT_NAME" usr/
     

@@ -94,11 +94,15 @@ jobs:
         run: |
           git clone https://x-access-token:${GH_TOKEN}@github.com/mihsian77/winlator-components.git
           cd winlator-components
-          
+
           # Plain filename list only: the installer parses every line as a
           # downloadable asset, so title/blank lines become junk entries.
-          gh release view turnip --repo mihsian77/winlator-components --json assets \
-            --jq '.assets[].name' | sort > turnip/index.txt
+          # 自编译产物带 -dev，不进公开列表（仍可从 release 手动下载）
+          LIST=$(gh release view turnip --repo mihsian77/winlator-components --json assets \
+            --jq '.assets[].name')
+          if [ -n "$LIST" ]; then
+            echo "$LIST" | grep -v -- '-dev' | sort > turnip/index.txt || true
+          fi
           
           git config user.name "mihsian77"
           git config user.email "209595350+mihsian77@users.noreply.github.com"

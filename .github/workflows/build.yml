@@ -37,7 +37,7 @@ jobs:
             git ccache ninja-build python3-pip pkg-config \
             libxfixes-dev libarchive-dev \
             libdrm-dev libxcb-dri3-dev libxcb-present-dev libxcb-sync-dev \
-            flex bison glslang-tools zstd tar
+            flex bison glslang-tools zstd tar patchelf
           pip3 install --break-system-packages "meson>=1.4" mako
 
       - name: Build variant ${{ matrix.variant }}

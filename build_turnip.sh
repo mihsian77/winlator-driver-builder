@@ -149,6 +149,13 @@ pack_tzst() {
     
     # Copy the driver
     cp /tmp/mesa-install/usr/lib/aarch64-linux-gnu/libvulkan_freedreno.so "$PACKDIR/usr/lib/"
+
+    # Ubuntu 的 libc.so 是个 linker script，里面写着 AS_NEEDED(ld-linux-aarch64.so.1)，
+    # 一旦链接时 --no-as-needed 生效，动态链接器就会被打进 NEEDED。
+    # 运行时 dlopen 一个把 ld.so 当普通库依赖的 .so 会直接失败，所以打包前剔掉。
+    if command -v patchelf >/dev/null 2>&1; then
+        patchelf --remove-needed ld-linux-aarch64.so.1 "$PACKDIR/usr/lib/libvulkan_freedreno.so" 2>/dev/null || true
+    fi
     
     # Create ICD json
     cat <<EOF >"$PACKDIR/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json"

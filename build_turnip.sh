@@ -169,6 +169,45 @@ pack_tzst() {
 }
 EOF
     
+    # 打包前最后一道闸：不合格的包不许进 release。
+    # 之前 ld-linux 那个问题就是编完直接传，没人看一眼，到真机才暴露。
+    verify_package() {
+        local lib="$PACKDIR/usr/lib/libvulkan_freedreno.so"
+        local icd="$PACKDIR/usr/share/vulkan/icd.d/freedreno_icd.aarch64.json"
+
+        if [ ! -f "$lib" ]; then
+            echo "  ✘ libvulkan_freedreno.so 不存在"
+            return 1
+        fi
+
+        # Android 的 loader 会拒绝 dlopen 一个把 ld.so 当普通依赖的 .so
+        if readelf -d "$lib" 2>/dev/null | grep -q "NEEDED.*ld-linux"; then
+            echo "  ✘ NEEDED 里仍然有 ld-linux，运行时会被拒绝加载"
+            return 1
+        fi
+
+        if ! file "$lib" | grep -q "ELF 64-bit.*ARM aarch64"; then
+            echo "  ✘ 不是 aarch64 共享库"
+            return 1
+        fi
+
+        # ICD 必须指向容器 rootfs 里解压出来的那个位置
+        if ! grep -q '"library_path": "/data/data/com.winlator/files/rootfs/usr/lib/libvulkan_freedreno.so"' "$icd" 2>/dev/null; then
+            echo "  ✘ ICD 里的 library_path 不是容器路径"
+            return 1
+        fi
+
+        # 顺带核对一遍依赖清单，方便在日志里比对
+        echo "  NEEDED:"
+        readelf -d "$lib" 2>/dev/null | grep NEEDED | sed 's/^/    /'
+        return 0
+    }
+
+    if ! verify_package; then
+        echo -e "${red}Packaging aborted: artifact verification failed${nocolor}"
+        exit 1
+    fi
+    
     # 自编译产物统一带 -dev 标记，和官方版本区分开：
     # 公开的组件列表（index.txt）只列官方包，自编译的只留在 release 里供手动下载测试
     if [ "$VARIANT" == "standard" ]; then
